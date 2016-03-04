@@ -3,9 +3,13 @@ from nltk.corpus import stopwords, movie_reviews
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.cross_validation import train_test_split
 from sklearn.feature_extraction import DictVectorizer
+from sklearn.grid_search import RandomizedSearchCV
 import nltk
 import csv
 import random
+import scipy
+import numpy as np
+import math
 
 with open('training.1600000.processed.noemoticon.csv', 'rU') as trainingInput:
     # detect the "dialect" of this type of csv file
@@ -20,6 +24,7 @@ with open('training.1600000.processed.noemoticon.csv', 'rU') as trainingInput:
     rowCount = 0
 
     allTweets = []
+    allTweetSentiments = []
     for row in trainingRows:
         rowCount += 1
         # TODO: once we're ready for production, use all the data
@@ -27,6 +32,9 @@ with open('training.1600000.processed.noemoticon.csv', 'rU') as trainingInput:
             # csv only gives us an iterable, not the data itself
             # the message of the tweet is at index position 5
             allTweets.append(row[5])
+            allTweetSentiments.append(row[0])
+
+
 
 # stopwords are super common words that occur so frequently as to be useless for ML
 stopWords = set(stopwords.words('english'))
@@ -86,9 +94,11 @@ for word in movie_reviews.words():
 allWords = nltk.FreqDist(allWords)
 
 
-# grab the top 5000 words, ignoring the 100 most popular
+# grab the top several thousand words, ignoring the 100 most popular
+# grabbing more words leads to more accurate predictions, at the cost of both memory and compute time
 # ignoring the 100 most popular is an easy method for handling stop words that are specific to this dataset, rather than just the English language overall
-popularWords = list(allWords.keys())[100:5000]
+numWordsToUse = 3000
+popularWords = list(allWords.keys())[100:numWordsToUse]
 
 
 # this function takes in a document, and then returns a dictionary with a consistent set of keys for every document
@@ -124,9 +134,30 @@ trainReviews, testReviews, trainSentiment, testSentiment = train_test_split(
     sparseFeatures, reviewsSentiment, test_size=0.33, random_state=8)
 
 
-rf = RandomForestClassifier(n_estimators=100)
-rf.fit(trainReviews, trainSentiment)
-print rf.score(testReviews, testSentiment)
+# train a single random forest on our training data, test on our testing data
+classifier = RandomForestClassifier(n_estimators=100)
+classifier.fit(trainReviews, trainSentiment)
+print classifier.score(testReviews, testSentiment)
+
+# optimize the hyperparameters for our random forest using RandomizedSearchCV
+sqrtNum = int( math.log( math.sqrt(numWordsToUse) ) )
+# print sqrtNum
+parametersToTry = {
+    # 'max_features': scipy.stats.randint(1,numWordsToUse/7),
+    'min_samples_leaf': scipy.stats.randint(1,30),
+    'min_samples_split': scipy.stats.randint(2,30),
+    'bootstrap': [True,False]
+}
+# run on all cores, fail gracefully if a combination of hyperparameters fails to converge, try 10 different combinations of hyperparameters, train on all the training data when finished, and use a third of the dataset for cross-validation while training
+searchCV = RandomizedSearchCV(classifier, parametersToTry, n_jobs=-1, error_score=0, n_iter=1000, refit=True, cv=3)
+# best results out of 10k training runs:
+# {'max_features': 51, 'min_samples_split': 19, 'bootstrap': True, 'min_samples_leaf': 4}
+
+
+searchCV.fit(trainReviews, trainSentiment)
+print searchCV.best_params_
+print searchCV.best_score_
+print searchCV.score(testReviews, testSentiment)
 
 
 
