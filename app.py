@@ -1,5 +1,8 @@
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords, movie_reviews
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.cross_validation import train_test_split
+from sklearn.feature_extraction import DictVectorizer
 import nltk
 import csv
 import random
@@ -89,18 +92,41 @@ popularWords = list(allWords.keys())[100:5000]
 
 
 # this function takes in a document, and then returns a dictionary with a consistent set of keys for every document
-# ultimately, this is creating a dense matrix of our documents
-# obviously, using sparse matrices is an easy optimization to make from here, but it's unnecessary complexity at this stage
+# this ensures that we will have consistent features for each document we process, which becomes critical once we start getting predictions on new documents we did not train on
 def extractFeatures(doc):
     docWords = set(doc)
     docFeatures = {}
+
     for word in popularWords:
         docFeatures[word] = word in docWords
     return docFeatures
 
-allFeatures = []
+
+formattedReviews = []
+reviewsSentiment = []
+
 for review, category in reviews:
     reviewFeatures = extractFeatures(review)
-    allFeatures.append( (reviewFeatures, category) )
+    formattedReviews.append(reviewFeatures)
+    reviewsSentiment.append(str(category))
+
+
+# right now we have a data structure roughly equivalent to a dense matrix, except each row is a dictionary
+# DictVectorizer performs two key functions for us:
+    # 1. turns each row form a dictionary into a vector using consistent placing of keys into indexed positions within each vector
+    # 2. returns sparse vectors, saving enormous amounts of memory which becomes very useful when training our models
+dv = DictVectorizer(sparse=True)
+sparseFeatures = dv.fit_transform(formattedReviews)
+
+
+# split our data into training and test datasets
+trainReviews, testReviews, trainSentiment, testSentiment = train_test_split(
+    sparseFeatures, reviewsSentiment, test_size=0.33, random_state=8)
+
+
+rf = RandomForestClassifier(n_estimators=100)
+rf.fit(trainReviews, trainSentiment)
+print rf.score(testReviews, testSentiment)
+
 
 
