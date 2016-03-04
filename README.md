@@ -4,6 +4,7 @@
 ## Installation
 
 1. `pip install -r requirements.txt`
+1. If this fails to install scikit-learn properly, you may have to `pip install numpy` and `pip install scipy`
 1. Open python on the command line
 1. `import nltk`
 1. `ntlk.download()` This will open a GUI.
