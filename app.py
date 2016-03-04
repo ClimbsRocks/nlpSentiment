@@ -60,9 +60,6 @@ for tweet in allTweets:
         # for MVP, i'm going to ignore them to focus on the 99% use case
         asciiIssues += 1    
 
-    # if rowCount % 5000 == 0:
-    #     print filteredWords
-
 # create a reviews list that holds two pieces of informatin on each reivew:
     # the words of the review
     # the category (pos or neg) for that review
@@ -78,8 +75,6 @@ for category in movie_reviews.categories():
 random.seed(8)
 random.shuffle(reviews)
 
-# print str(reviews[1])
-# print reviews[100]
 
 allWords = []
 for word in movie_reviews.words():
@@ -87,9 +82,11 @@ for word in movie_reviews.words():
 
 allWords = nltk.FreqDist(allWords)
 
+
 # grab the top 5000 words, ignoring the 100 most popular
 # ignoring the 100 most popular is an easy method for handling stop words that are specific to this dataset, rather than just the English language overall
 popularWords = list(allWords.keys())[100:5000]
+
 
 # this function takes in a document, and then returns a dictionary with a consistent set of keys for every document
 # ultimately, this is creating a dense matrix of our documents
@@ -102,7 +99,6 @@ def extractFeatures(doc):
     return docFeatures
 
 allFeatures = []
-# print reviews
 for review, category in reviews:
     reviewFeatures = extractFeatures(review)
     allFeatures.append( (reviewFeatures, category) )
