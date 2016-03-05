@@ -1,7 +1,9 @@
 import csv
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-def loadDataset(fileName):
+
+
+def loadDataset(fileName, splitNum):
     with open(fileName, 'rU') as trainingInput:
         # detect the "dialect" of this type of csv file
         try:
@@ -16,16 +18,18 @@ def loadDataset(fileName):
 
         allTweets = []
         allTweetSentiments = []
+        allRows = []
         for row in trainingRows:
             rowCount += 1
             # TODO: once we're ready for production, use all the data
-            if rowCount % 100 == 0:
+            if rowCount % splitNum == 0:
                 # csv only gives us an iterable, not the data itself
                 # the message of the tweet is at index position 5
                 allTweets.append(row[5])
-                allTweetSentiments.append(row[0])
+                allTweetSentiments.append( {'sentiment': row[0]} )
+                allRows.append(row)
 
-    return allTweets, allTweetSentiments
+    return allTweets, allTweetSentiments, allRows
 
 def removeStopWords(allTweets):
     # stopwords are super common words that occur so frequently as to be useless for ML
@@ -61,4 +65,15 @@ def removeStopWords(allTweets):
             # there are some weird ascii encoding issues present in a small part of our dataset. 
             # they represent < 1% of our dataset
             # for MVP, i'm going to ignore them to focus on the 99% use case
-            asciiIssues += 1    
+            asciiIssues += 1  
+    return allTweets
+
+def writeTestData(testData):
+
+    with open('testdata.all.results.csv', 'wb+') as writeFile:
+        csvWriter = csv.writer(writeFile, dialect='excel')
+        for row in testData:
+            csvWriter.writerow(row)
+
+
+
