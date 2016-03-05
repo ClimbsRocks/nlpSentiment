@@ -70,7 +70,7 @@ def removeStopWords(allTweets):
 
 def writeTestData(testData):
 
-    with open('testdata.all.results.csv', 'wb+') as writeFile:
+    with open('testdata.all.predictions.csv', 'wb+') as writeFile:
         csvWriter = csv.writer(writeFile, dialect='excel')
         for row in testData:
             csvWriter.writerow(row)

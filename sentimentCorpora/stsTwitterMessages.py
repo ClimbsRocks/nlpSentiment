@@ -4,7 +4,7 @@ import nltk
 import random
 import loadAndProcessData
 
-# putting these in global scope for the module so we can use them on both the training and testing data
+# putting this in global scope for the module so we can use it on both the training and testing data
 dv = DictVectorizer(sparse=True)
 
 # this function takes in a document, and then returns a dictionary with a consistent set of keys for every document
@@ -49,7 +49,7 @@ def getFeatures(numWordsToUse, allTweets, allTweetsSentiment):
     for tweet, sentiment in combined:
         tweetFeatures = extractFeatures(tweet)
         formattedTweets.append(tweetFeatures)
-        tweetsSentiment.append(str(sentiment))
+        tweetsSentiment.append(sentiment)
 
 
     # right now we have a data structure roughly equivalent to a dense matrix, except each row is a dictionary
