@@ -19,7 +19,7 @@ Oddly, they did not include the predictions of their algorithm on the test datas
 
 I went through and made predictions on the test dataset according to the algorithm they described (all the variants of happy and frowny emoticons I could find searching through the dataset for a couple minutes).
 
-### Their algorithm's results
+#### Their algorithm's results
 
 Overall, their algorithm predicted:
 
@@ -35,4 +35,14 @@ Negative: 13  / 164 (7.9%)
 Neutral:  139 / 139 (100%)
 Positive: 16  / 166 (9.6%)
 
+### Assembling a custom Twitter sentiment corpus
+[CrowdFlower](http://www.crowdflower.com/data-for-everyone) hosts a number of Twitter corpora that have already been graded for sentiment by panels of humans. 
+
+I aggregated together 6 of their corpora into a single, aggregated and cleaned corpus, with consistent scoring labels across the entire corpus. The cleaned corpus contains over 45,000 documents, with sentiment graded on a 5 point scale as described below:
+
+1 is negative
+3 is neutral
+5 is positive
+
+I then trained a sentiment classifier on this aggregated corpus, and used it to get predictions on the test dataset. 
 
