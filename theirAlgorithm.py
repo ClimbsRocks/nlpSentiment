@@ -54,22 +54,7 @@ for row in entireDataset:
 
     # add their algorithms prediction to each row
     row.insert(0, sentimentScore)
-    # theirAlgosPredictions.append(sentimentScore)
 
 print entireDataset
 
-correctScores = 0
-incorrectScores = 0
-
-with open('testdata.manual.their.algo.predictions.csv', 'wb+') as writeFile:
-    csvWriter = csv.writer(writeFile, dialect='excel')
-    for row in entireDataset:
-        if str(row[0]) == str(row[1]):
-            correctScores += 1
-        else:
-            incorrectScores += 1
-
-        csvWriter.writerow(row)
-
-print 'correctScores' + str(correctScores)
-print 'incorrectScores' + str(incorrectScores)
+loadAndProcessData.writeTestData(entireDataset)
