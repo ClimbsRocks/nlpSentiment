@@ -14,11 +14,13 @@ from sentimentCorpora import stsTwitterMessages
 from sentimentCorpora import atcTwitterMessages
 
 # load the "training" data
-trainingTweets, trainingSentiment, allRows = loadAndProcessData.loadDataset('training.1600000.processed.noemoticon.csv', 1)
-trainingTweets = loadAndProcessData.removeStopWords(trainingTweets)
+trainingTweets, trainingSentiment, allRows = loadAndProcessData.loadDataset('training.1600000.processed.noemoticon.csv', 50)
+# trainingTweets = loadAndProcessData.tokenize(trainingTweets)
+trainingTweets, trainingSentiment = loadAndProcessData.removeStopWords(trainingTweets, trainingSentiment)
 
 # load the test data
 testTweetsAll, testSentiment, testRows = loadAndProcessData.loadDataset('testdata.manual.2009.06.14.csv', 1)
+testTweetsAll, testSentiment = loadAndProcessData.removeStopWords(testTweetsAll, testSentiment)
 
 # we are going to test the models on a subsample of the overall test set that is only positive and negative
 # running a bunch of tests shows conclusively that for this particular dataset, the models learn most effectively when trained on only positive and negative sentiment. it makes sense that neutral is hard to figure out, since it is a general catch-all bucket, rather than a specific category to be observed.

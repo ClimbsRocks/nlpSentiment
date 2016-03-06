@@ -12,7 +12,7 @@ def trainClassifier(X, y, testTweetsPosNegOnly, testSentimentPosNegOnly, testTwe
     xTrain, xTest, yTrain, yTest = train_test_split(
         X, y, test_size=0.33, random_state=8)
 
-    classifier = RandomForestClassifier(n_estimators=200, n_jobs=-1)
+    classifier = RandomForestClassifier(n_estimators=20, n_jobs=-1)
 
     # for simplicity's sake, we could train a single random forest:
     # classifier.fit(xTrain, yTrain)

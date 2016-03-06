@@ -1,5 +1,8 @@
 import csv
-from nltk.tokenize import word_tokenize
+import random
+import nltk
+
+from nltk.tokenize import word_tokenize, TweetTokenizer
 from nltk.corpus import stopwords
 
 # splitNum is used to take a subsample of our dataset
@@ -31,42 +34,137 @@ def loadDataset(fileName, splitNum, tweetColumn=5):
 
     return allTweets, allTweetSentiments, allRows
 
-def removeStopWords(allTweets):
+def tokenize(tweets):
+    tokenizer = TweetTokenizer(preserve_case=False,reduce_len=True,strip_handles=True)
+    tokenized = []
+    for tweet in tweets:
+        tokenizedTweet = tokenizer.tokenize(tweet)
+        # print tokenizedTweet
+        tokenized.append(tokenizedTweet)
+    return tokenized
+
+def removeStopWords(tweets, sentiment):
     # stopwords are super common words that occur so frequently as to be useless for ML
     stopWords = set(stopwords.words('english'))
 
-    rowCount = 0
+    # NLTK has a tokenizer built out specifically for short messaging data
+    # here we will use some of it's features to turn all words to lowercase,
+    # reduce the length of repeated characters ('hiiiiiiiii' and 'hiiiii' both become 'hiii' with three repeats)
+    # and get rid of any handles that might exist in the message
+    tokenizer = TweetTokenizer(preserve_case=False,reduce_len=True,strip_handles=True)
+
+    tokenizedTweets = []
+    cleanedSentiment = []
+
     asciiIssues = 0
-    for tweet in allTweets:
-        rowCount += 1
+    for rowIdx, tweet in enumerate(tweets):
         try:
-            tokenizedWords = word_tokenize(tweet)
-            filteredWords = []
+            tokenizedWords = tokenizer.tokenize(tweet)
+            # filteredWords = []
 
-            # we will be removing all Twitter handles as well
-            # they may occasionally be useful, but will also take up a lot of space
-            isHandle = False
+            # for word in tokenizedWords:
+            #     if word not in stopWords:
+            #         filteredWords.append(word)
 
-            for word in tokenizedWords:
-                word = word.lower()
-
-                if word == '@':
-                    isHandle = True
-
-                elif isHandle:
-                    # if the previous word was '@', this word is a user's handle
-                    # we want to skip this word, and clear the slate for the next word
-                    isHandle = False
-
-                elif word not in stopWords:
-                    filteredWords.append(word)
+            # tokenizedTweets.append(filteredWords)
+            tokenizedTweets.append(tokenizedWords)
+            cleanedSentiment.append(sentiment[rowIdx])
 
         except:
             # there are some weird ascii encoding issues present in a small part of our dataset. 
             # they represent < 1% of our dataset
             # for MVP, i'm going to ignore them to focus on the 99% use case
             asciiIssues += 1  
-    return allTweets
+
+    return tokenizedTweets, cleanedSentiment
+
+def shuffleOrder(tweets, sentiment):
+    combined = []
+    for rowIdx, tweet in enumerate(tweets):
+        combined.append( (tweet, sentiment[rowIdx]) )
+    # our tweets are oftentimes ordered with all the positive reivews at the end
+    # to make sure we're not testing on only the positive reviews, we shuffle them
+    # to keep the process consistent during development, we will set the seed
+    random.seed(8)
+    random.shuffle(combined)
+    return combined
+
+def createPopularWords(combined, lowerBound, upperBound):
+    allWords = []
+    for message in combined:
+        # print message
+        for word in message[0]:
+            # print word
+            allWords.append(word)
+
+    allWords = nltk.FreqDist(allWords)
+
+    # grab the top several thousand words, ignoring the 100 most popular
+    # grabbing more words leads to more accurate predictions, at the cost of both memory and compute time
+    # ignoring the 100 most popular is an easy method for handling stop words that are specific to this dataset, rather than just the English language overall
+    popularWords = []
+    wordsToUse = allWords.most_common(upperBound)[lowerBound:upperBound]
+    for pair in wordsToUse:
+        popularWords.append(pair[0])
+        # print word
+        # print allWords[word]
+    # print popularWords
+    return popularWords
+
+
+# extract features from a single document in a consistent manner for all documents in a corpus
+# simply returns whether a given word in popularWords is included in the document
+def extractFeaturesDoc(doc, popularWords):
+    docWords = set(doc)
+    docFeatures = {}
+
+    for word in popularWords:
+        docFeatures[word] = word in docWords
+    return docFeatures
+
+
+# same as extractFeaturesDoc, but extracts counts of all words in the document
+def extractFeatureCountsDoc(doc, popularWords):
+    docFeatures = {}
+    for word in doc:
+        if word in popularWords:
+            try:
+                docFeatures[word] += 1
+            except:
+                docFeatures[word] = 1
+    return docFeatures
+
+
+# extract features from all documents in a corpus, allowing for easy testing of whether feature counts or feature inclusions are more useful
+def extractFeaturesList(tweets, popularWords, inclusionOrCounts='counts'):
+    if inclusionOrCounts == 'counts':
+        popularWords = set(popularWords)
+        featureExtractor = extractFeatureCountsDoc
+    else:
+        featureExtractor = extractFeaturesDoc
+
+    formattedTweets = []
+    for tweet in tweets:
+        formattedTweet = featureExtractor(tweet, popularWords)
+        formattedTweets.append(formattedTweet)
+
+    return formattedTweets
+
+
+def nlpFeatureEngineering(tweets, sentiment, lowerBound=0, upperBound=3000, inclusionOrCounts='counts'):
+    combined = shuffleOrder(tweets, sentiment)
+
+
+    popularWords = createPopularWords(combined, lowerBound, upperBound)
+
+
+    tweets, sentiment = zip(*combined)
+
+
+    formattedTweets = extractFeaturesList(tweets, popularWords, 'counts')
+
+    
+    return formattedTweets, sentiment, popularWords
 
 def writeTestData(testData, fileName):
 

@@ -18,39 +18,17 @@ def extractFeatures(doc):
 
 
 def getFeatures(numWordsToUse, allTweets, allTweetsSentiment):
-    print 'entered getFeatures'
-    combined = []
-    for rowIdx, tweet in enumerate(allTweets):
-        combined.append( (tweet, allTweetsSentiment[rowIdx]) )
-    print 'created the combined dataset'
-    # our reviews are ordered with all the positive reivews at the end
-    # to make sure we're not testing on only the positive reviews, we shuffle them
-    # to keep the process consistent during development, we will set the seed
-    random.seed(8)
-    random.shuffle(combined)
+    # each corpus's getFeatures function is responsible for somehow loading in their own allTweets and allTweetsSentiment data
+    # then they have to ensure that data is tokenized (leveraging the modular tokenization functionality in loadAndProcessData)
+    # then shuffle the dataset
+    # then create the frequency distribution and popularWords
+    # then extract features from each tweet, and un-combine the sentiment again
 
-    allWords = []
-    for message in combined:
-        for word in message[0]:
-            allWords.append(word.lower())
 
-    allWords = nltk.FreqDist(allWords)
-    print 'allWords has been created'
-
-    # grab the top several thousand words, ignoring the 100 most popular
-    # grabbing more words leads to more accurate predictions, at the cost of both memory and compute time
-    # ignoring the 100 most popular is an easy method for handling stop words that are specific to this dataset, rather than just the English language overall
     global popularWords
-    popularWords = list(allWords.keys())[20:numWordsToUse]
-
-    formattedTweets = []
-    tweetsSentiment = []
-
-    for tweet, sentiment in combined:
-        tweetFeatures = extractFeatures(tweet)
-        formattedTweets.append(tweetFeatures)
-        tweetsSentiment.append(sentiment)
-
+    formattedTweets, sentiment, popularWords = loadAndProcessData.nlpFeatureEngineering(
+            allTweets, allTweetsSentiment,0,numWordsToUse,'counts'
+        )
 
     # right now we have a data structure roughly equivalent to a dense matrix, except each row is a dictionary
     # DictVectorizer performs two key functions for us:
@@ -58,13 +36,10 @@ def getFeatures(numWordsToUse, allTweets, allTweetsSentiment):
         # 2. returns sparse vectors, saving enormous amounts of memory which becomes very useful when training our models
     sparseFeatures = dv.fit_transform(formattedTweets)
 
-    return sparseFeatures, tweetsSentiment
+    return sparseFeatures, sentiment
 
 def formatTestData(testTweets):
-    formattedTweets = []
-    for tweet in testTweets:
-        tweetFeatures = extractFeatures(tweet)
-        formattedTweets.append(tweetFeatures)
+    formattedTweets = loadAndProcessData.extractFeaturesList(testTweets, popularWords, 'counts')
 
 
     sparseFeatures = dv.transform(formattedTweets)
