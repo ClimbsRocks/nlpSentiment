@@ -18,15 +18,10 @@ def extractFeatures(doc):
 
 
 def getFeatures(numWordsToUse, allTweets, allTweetsSentiment):
-
+    print 'entered getFeatures'
     combined = []
     for rowIdx, tweet in enumerate(allTweets):
-        # speed up dev time by only training on a portion of the remaining dataset
-        if random.random() > 0.8:
-            combined.append( (tweet, allTweetsSentiment[rowIdx]) )
-        else:
-            allTweets[rowIdx] = None
-            allTweetsSentiment[rowIdx] = None
+        combined.append( (tweet, allTweetsSentiment[rowIdx]) )
     print 'created the combined dataset'
     # our reviews are ordered with all the positive reivews at the end
     # to make sure we're not testing on only the positive reviews, we shuffle them

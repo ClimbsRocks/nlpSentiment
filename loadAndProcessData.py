@@ -68,9 +68,9 @@ def removeStopWords(allTweets):
             asciiIssues += 1  
     return allTweets
 
-def writeTestData(testData):
+def writeTestData(testData, fileName):
 
-    with open('testdata.all.predictions.csv', 'wb+') as writeFile:
+    with open(fileName, 'wb+') as writeFile:
         csvWriter = csv.writer(writeFile, dialect='excel')
         for row in testData:
             csvWriter.writerow(row)

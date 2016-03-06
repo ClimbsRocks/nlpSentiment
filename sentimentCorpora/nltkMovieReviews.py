@@ -44,7 +44,7 @@ def getFeatures(numWordsToUse):
     # grabbing more words leads to more accurate predictions, at the cost of both memory and compute time
     # ignoring the 100 most popular is an easy method for handling stop words that are specific to this dataset, rather than just the English language overall
     global popularWords
-    popularWords = list(allWords.keys())[100:numWordsToUse]
+    popularWords = list(allWords.keys())[50:numWordsToUse]
 
     outputMap = {
         'neg': 0,

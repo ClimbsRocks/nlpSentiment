@@ -14,7 +14,7 @@ from sentimentCorpora import stsTwitterMessages
 from sentimentCorpora import atcTwitterMessages
 
 # load the "training" data
-trainingTweets, trainingSentiment, allRows = loadAndProcessData.loadDataset('training.1600000.processed.noemoticon.csv', 100)
+trainingTweets, trainingSentiment, allRows = loadAndProcessData.loadDataset('training.1600000.processed.noemoticon.csv', 1)
 trainingTweets = loadAndProcessData.removeStopWords(trainingTweets)
 
 # load the test data
@@ -44,11 +44,6 @@ trainingSentiment = cleanedTrainingSentiment
 # split out a third of our "training" dataset to train the ensembler algorithm on at the end
 trainingTweets, ensembleTweets, trainingSentiment, ensembleSentiment = train_test_split(trainingTweets, trainingSentiment, test_size=0.33, random_state=8)
 
-# our test data has three categories in it, while the trainingTweets only have two categories. That's why we fit on the test data
-# DictVectorizer is explained in more depth inside the files in sentimentCorpora
-# dvSentiment = DictVectorizer(sparse=False)
-# testSentimentPosNegOnly = dvSentiment.fit_transform(testSentimentPosNegOnly)
-
 
 # we will only be using the top several thousand most frequent words in each sentiment corpus
 numWordsToUse = 2000
@@ -58,13 +53,14 @@ numWordsToUse = 2000
 ###############################################################
 # get features from corpus
 stsFeatures, stsSentiment = stsTwitterMessages.getFeatures(numWordsToUse, trainingTweets, trainingSentiment)
+stsEnsembleTweets = stsTwitterMessages.formatTestData(ensembleTweets)
 
 # format test tweets to be compatible with the classifier that will be trained from this corpus
 stsTestTweetsPosNegOnly = stsTwitterMessages.formatTestData(testTweetsPosNegOnly)
 stsTestTweetsAll = stsTwitterMessages.formatTestData(testTweetsAll)
 
 # train a classifier from this corpus and use it to get predictions on our test data
-stsPredictions = trainClassifiers.trainClassifier(stsFeatures, stsSentiment, stsTestTweetsPosNegOnly, testSentimentPosNegOnly, stsTestTweetsAll)
+stsPredictions, stsEnsemblePredictions = trainClassifiers.trainClassifier(stsFeatures, stsSentiment, stsTestTweetsPosNegOnly, testSentimentPosNegOnly, stsTestTweetsAll, stsEnsembleTweets, ensembleSentiment)
 
 
 ###############################################################
@@ -72,13 +68,14 @@ stsPredictions = trainClassifiers.trainClassifier(stsFeatures, stsSentiment, sts
 ###############################################################
 # get features from corpus
 movieReviewFeatures, movieReviewsSentiment = nltkMovieReviews.getFeatures(numWordsToUse)
+movieReviewEnsembleTweets = nltkMovieReviews.formatTestData(ensembleTweets)
 
 # format test tweets to be compatible with the classifier that will be trained from this corpus
 movieReviewTestTweetsPosNegOnly = nltkMovieReviews.formatTestData(testTweetsPosNegOnly)
 movieReviewTestTweetsAll = nltkMovieReviews.formatTestData(testTweetsAll)
 
 # train a classifier from this corpus and use it to get predictions on our test data
-movieReviewPredictions = trainClassifiers.trainClassifier(movieReviewFeatures, movieReviewsSentiment, movieReviewTestTweetsPosNegOnly, testSentimentPosNegOnly, movieReviewTestTweetsAll)
+movieReviewPredictions, movieReviewEnsemblePredictions = trainClassifiers.trainClassifier(movieReviewFeatures, movieReviewsSentiment, movieReviewTestTweetsPosNegOnly, testSentimentPosNegOnly, movieReviewTestTweetsAll, movieReviewEnsembleTweets, ensembleSentiment)
 
 
 ##############################################################
@@ -86,26 +83,37 @@ movieReviewPredictions = trainClassifiers.trainClassifier(movieReviewFeatures, m
 ###############################################################
 # get features from corpus
 atcFeatures, atcSentiment = atcTwitterMessages.getFeatures(numWordsToUse)
+atcEnsembleTweets = atcTwitterMessages.formatTestData(ensembleTweets)
 
 # format test tweets to be compatible with the classifier that will be trained from this corpus
 atcTestTweetsPosNegOnly = atcTwitterMessages.formatTestData(testTweetsPosNegOnly)
 atcTestTweetsAll = atcTwitterMessages.formatTestData(testTweetsAll)
 
 # train a classifier from this corpus and use it to get predictions on our test data
-atcPredictions = trainClassifiers.trainClassifier(atcFeatures, atcSentiment, atcTestTweetsPosNegOnly, testSentimentPosNegOnly, atcTestTweetsAll)
+atcPredictions, atcEnsemblePredictions = trainClassifiers.trainClassifier(atcFeatures, atcSentiment, atcTestTweetsPosNegOnly, testSentimentPosNegOnly, atcTestTweetsAll, atcEnsembleTweets, ensembleSentiment)
 
 
-allPredictions = []
-# add header row
-allPredictions.append(['Stanford Twitter Sentiment', 'NLTK Movie Reviews', 'Aggregated Twitter Corpus'])
+def aggregatePredictions(stsPredictions, movieReviewPredictions, atcPredictions, fileName):
+    allPredictions = []
 
-# all of our predictions lists will have the same number of items, and in the same order
-for idx, prediction in enumerate(atcPredictions):
-    # add in a new row with the prediction from the classifier trained on the Aggregated Twitter Corpus
-    allPredictions.append([prediction])
-    # # to that row, add the NLTK-movie-review-trained classifier's prediction
-    allPredictions[idx].append(movieReviewPredictions[idx])
-    # # to that row, add the STS-trained classifier's prediction
-    # allPredictions[idx].append(movieReviewPredictions[idx])
+    # all of our predictions lists will have the same number of items, and in the same order
+    for idx, prediction in enumerate(stsPredictions):
+        # add in a new row with the prediction from the classifier trained on the Stanford Twitter Sentiment training data
+        allPredictions.append([prediction])
+        # # to that row, add the NLTK-movie-review-trained classifier's prediction
+        allPredictions[idx].append(movieReviewPredictions[idx])
+        # # to that row, add the Aggregated Twitter Corpus's-trained classifier's prediction
+        allPredictions[idx].append(atcPredictions[idx])
 
-loadAndProcessData.writeTestData(allPredictions)
+    # add header row
+    allPredictions.insert(0,['Stanford Twitter Sentiment', 'NLTK Movie Reviews', 'Aggregated Twitter Corpus'])
+
+    loadAndProcessData.writeTestData(allPredictions, fileName)
+    return allPredictions
+
+testPredictions = aggregatePredictions(stsPredictions, movieReviewPredictions, atcPredictions, 'testdata.all.predictions.csv')
+ensembledPredictions = aggregatePredictions(stsEnsemblePredictions, movieReviewEnsemblePredictions, atcEnsemblePredictions, 'ensembleData.all.predictions.csv')
+
+finalPredictions = trainClassifiers.trainEnsembleClassifier(ensembledPredictions, ensembleSentiment, testPredictions)
+loadAndProcessData.writeTestData(finalPredictions, 'testdata.entire.ensembled.predictions.csv')
+
