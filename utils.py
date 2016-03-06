@@ -68,6 +68,7 @@ def tokenize(tweets, sentiment):
             # there are some weird ascii encoding issues present in a small part of our dataset. 
             # they represent < 1% of our dataset
             # for MVP, i'm going to ignore them to focus on the 99% use case
+            # these issues do not exist in the test data set, so it is safe to ignore these rows
             asciiIssues += 1  
 
     return tokenizedTweets, cleanedSentiment
