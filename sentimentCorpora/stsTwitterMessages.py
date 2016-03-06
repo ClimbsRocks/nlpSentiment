@@ -1,7 +1,7 @@
 from sklearn.feature_extraction import DictVectorizer
 import nltk
 import random
-import loadAndProcessData
+import utils
 
 # putting this in global scope for the module so we can use it on both the training and testing data
 dv = DictVectorizer(sparse=True)
@@ -9,14 +9,14 @@ dv = DictVectorizer(sparse=True)
 
 def getFeatures(numWordsToUse, allTweets, allTweetsSentiment):
     # each corpus's getFeatures function is responsible for somehow loading in their own allTweets and allTweetsSentiment data
-    # then they have to ensure that data is tokenized (leveraging the modular tokenization functionality in loadAndProcessData)
+    # then they have to ensure that data is tokenized (leveraging the modular tokenization functionality in utils)
     # then shuffle the dataset
     # then create the frequency distribution and popularWords
     # then extract features from each tweet, and un-combine the sentiment again
 
 
     global popularWords
-    formattedTweets, sentiment, popularWords = loadAndProcessData.nlpFeatureEngineering(
+    formattedTweets, sentiment, popularWords = utils.nlpFeatureEngineering(
             allTweets, allTweetsSentiment,0,numWordsToUse,'counts'
         )
 
@@ -29,7 +29,7 @@ def getFeatures(numWordsToUse, allTweets, allTweetsSentiment):
     return sparseFeatures, sentiment
 
 def formatTestData(testTweets):
-    formattedTweets = loadAndProcessData.extractFeaturesList(testTweets, popularWords, 'counts')
+    formattedTweets = utils.extractFeaturesList(testTweets, popularWords, 'counts')
 
 
     sparseFeatures = dv.transform(formattedTweets)

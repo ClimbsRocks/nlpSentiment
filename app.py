@@ -6,7 +6,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.cross_validation import train_test_split
 
-import loadAndProcessData
+import utils
 import trainClassifiers
 
 from sentimentCorpora import nltkMovieReviews
@@ -15,13 +15,13 @@ from sentimentCorpora import atcTwitterMessages
 
 
 # load the "training" data
-trainingTweets, trainingSentiment, allRows = loadAndProcessData.loadDataset('training.1600000.processed.noemoticon.csv', 200)
-trainingTweets, trainingSentiment = loadAndProcessData.tokenize(trainingTweets, trainingSentiment)
+trainingTweets, trainingSentiment, allRows = utils.loadDataset('training.1600000.processed.noemoticon.csv', 50)
+trainingTweets, trainingSentiment = utils.tokenize(trainingTweets, trainingSentiment)
 
 
 # load the test data
-testTweetsAll, testSentiment, testRows = loadAndProcessData.loadDataset('testdata.manual.2009.06.14.csv', 1)
-testTweetsAll, testSentiment = loadAndProcessData.tokenize(testTweetsAll, testSentiment)
+testTweetsAll, testSentiment, testRows = utils.loadDataset('testdata.manual.2009.06.14.csv', 1)
+testTweetsAll, testSentiment = utils.tokenize(testTweetsAll, testSentiment)
 
 
 # we are going to test the models on a subsample of the overall test set that is only positive and negative
@@ -104,9 +104,9 @@ atcPredictions, atcEnsemblePredictions = trainClassifiers.trainClassifier(atcFea
 
 
 
-testPredictions = loadAndProcessData.aggregatePredictions(stsPredictions, movieReviewPredictions, atcPredictions, 'testdata.all.predictions.csv')
-ensembledPredictions = loadAndProcessData.aggregatePredictions(stsEnsemblePredictions, movieReviewEnsemblePredictions, atcEnsemblePredictions, 'ensembleData.all.predictions.csv')
+testPredictions = utils.aggregatePredictions(stsPredictions, movieReviewPredictions, atcPredictions, 'testdata.all.predictions.csv')
+ensembledPredictions = utils.aggregatePredictions(stsEnsemblePredictions, movieReviewEnsemblePredictions, atcEnsemblePredictions, 'ensembleData.all.predictions.csv')
 
 finalPredictions = trainClassifiers.trainEnsembleClassifier(ensembledPredictions, ensembleSentiment, testPredictions)
-loadAndProcessData.writeData(finalPredictions, 'testdata.entire.ensembled.predictions.csv')
+utils.writeData(finalPredictions, 'testdata.entire.ensembled.predictions.csv')
 
