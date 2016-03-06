@@ -2,8 +2,8 @@ import csv
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 
-
-def loadDataset(fileName, splitNum):
+# splitNum is used to take a subsample of our dataset
+def loadDataset(fileName, splitNum, tweetColumn=5):
     with open(fileName, 'rU') as trainingInput:
         # detect the "dialect" of this type of csv file
         try:
@@ -25,8 +25,8 @@ def loadDataset(fileName, splitNum):
             if rowCount % splitNum == 0:
                 # csv only gives us an iterable, not the data itself
                 # the message of the tweet is at index position 5
-                allTweets.append(row[5])
-                allTweetSentiments.append( {'sentiment': row[0]} )
+                allTweets.append(row[tweetColumn])
+                allTweetSentiments.append( row[0] )
                 allRows.append(row)
 
     return allTweets, allTweetSentiments, allRows

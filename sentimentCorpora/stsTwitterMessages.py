@@ -1,4 +1,3 @@
-from nltk.corpus import movie_reviews
 from sklearn.feature_extraction import DictVectorizer
 import nltk
 import random
@@ -22,7 +21,13 @@ def getFeatures(numWordsToUse, allTweets, allTweetsSentiment):
 
     combined = []
     for rowIdx, tweet in enumerate(allTweets):
-        combined.append( (tweet, allTweetsSentiment[rowIdx]) )
+        # speed up dev time by only training on a portion of the remaining dataset
+        if random.random() > 0.8:
+            combined.append( (tweet, allTweetsSentiment[rowIdx]) )
+        else:
+            allTweets[rowIdx] = None
+            allTweetsSentiment[rowIdx] = None
+    print 'created the combined dataset'
     # our reviews are ordered with all the positive reivews at the end
     # to make sure we're not testing on only the positive reviews, we shuffle them
     # to keep the process consistent during development, we will set the seed
@@ -35,13 +40,13 @@ def getFeatures(numWordsToUse, allTweets, allTweetsSentiment):
             allWords.append(word.lower())
 
     allWords = nltk.FreqDist(allWords)
-
+    print 'allWords has been created'
 
     # grab the top several thousand words, ignoring the 100 most popular
     # grabbing more words leads to more accurate predictions, at the cost of both memory and compute time
     # ignoring the 100 most popular is an easy method for handling stop words that are specific to this dataset, rather than just the English language overall
     global popularWords
-    popularWords = list(allWords.keys())[100:numWordsToUse]
+    popularWords = list(allWords.keys())[20:numWordsToUse]
 
     formattedTweets = []
     tweetsSentiment = []

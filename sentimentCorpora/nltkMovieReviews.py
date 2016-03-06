@@ -47,8 +47,8 @@ def getFeatures(numWordsToUse):
     popularWords = list(allWords.keys())[100:numWordsToUse]
 
     outputMap = {
-        'neg': '0',
-        'pos': '4'
+        'neg': 0,
+        'pos': 1
     }
 
     formattedReviews = []
@@ -57,7 +57,7 @@ def getFeatures(numWordsToUse):
     for review, category in reviews:
         reviewFeatures = extractFeatures(review)
         formattedReviews.append(reviewFeatures)
-        reviewsSentiment.append( { 'sentiment': outputMap[category] } )
+        reviewsSentiment.append( outputMap[category] )
 
 
     # right now we have a data structure roughly equivalent to a dense matrix, except each row is a dictionary
