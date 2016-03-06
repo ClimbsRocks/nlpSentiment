@@ -57,20 +57,20 @@ trainingTweets, ensembleTweets, trainingSentiment, ensembleSentiment = train_tes
 numWordsToUse = 2000
 
 
-##############################################################
-# Stanford Twitter Sentiment (STS)
-###############################################################
-# this is the original "training" data provided
-# get features from corpus
-stsFeatures, stsSentiment = stsTwitterMessages.getFeatures(numWordsToUse, trainingTweets, trainingSentiment)
-stsEnsembleTweets = stsTwitterMessages.formatTestData(ensembleTweets)
+# ##############################################################
+# # Stanford Twitter Sentiment (STS)
+# ###############################################################
+# # this is the original "training" data provided
+# # get features from corpus
+# stsFeatures, stsSentiment = stsTwitterMessages.getFeatures(numWordsToUse, trainingTweets, trainingSentiment)
+# stsEnsembleTweets = stsTwitterMessages.formatTestData(ensembleTweets)
 
-# format test tweets to be compatible with the classifier that will be trained from this corpus
-stsTestTweetsPosNegOnly = stsTwitterMessages.formatTestData(testTweetsPosNegOnly)
-stsTestTweetsAll = stsTwitterMessages.formatTestData(testTweetsAll)
+# # format test tweets to be compatible with the classifier that will be trained from this corpus
+# stsTestTweetsPosNegOnly = stsTwitterMessages.formatTestData(testTweetsPosNegOnly)
+# stsTestTweetsAll = stsTwitterMessages.formatTestData(testTweetsAll)
 
-# train a classifier from this corpus and use it to get predictions on our test data
-stsPredictions, stsEnsemblePredictions = trainClassifiers.trainClassifier(stsFeatures, stsSentiment, stsTestTweetsPosNegOnly, testSentimentPosNegOnly, stsTestTweetsAll, stsEnsembleTweets, ensembleSentiment)
+# # train a classifier from this corpus and use it to get predictions on our test data
+# stsPredictions, stsEnsemblePredictions = trainClassifiers.trainClassifier(stsFeatures, stsSentiment, stsTestTweetsPosNegOnly, testSentimentPosNegOnly, stsTestTweetsAll, stsEnsembleTweets, ensembleSentiment)
 
 
 ###############################################################

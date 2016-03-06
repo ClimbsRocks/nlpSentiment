@@ -98,6 +98,8 @@ def createPopularWords(combined, lowerBound, upperBound):
 
     allWords = nltk.FreqDist(allWords)
 
+    # print allWords.most_common(upperBound)
+
     # grab the top several thousand words, ignoring the 100 most popular
     # grabbing more words leads to more accurate predictions, at the cost of both memory and compute time
     # ignoring the 100 most popular is an easy method for handling stop words that are specific to this dataset, rather than just the English language overall

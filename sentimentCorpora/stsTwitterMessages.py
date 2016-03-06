@@ -1,6 +1,4 @@
 from sklearn.feature_extraction import DictVectorizer
-import nltk
-import random
 import utils
 
 # putting this in global scope for the module so we can use it on both the training and testing data
