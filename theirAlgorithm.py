@@ -57,4 +57,4 @@ for row in entireDataset:
 
 print entireDataset
 
-loadAndProcessData.writeTestData(entireDataset)
+loadAndProcessData.writeData(entireDataset)

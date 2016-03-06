@@ -13,18 +13,21 @@ from sentimentCorpora import nltkMovieReviews
 from sentimentCorpora import stsTwitterMessages
 from sentimentCorpora import atcTwitterMessages
 
+
 # load the "training" data
-trainingTweets, trainingSentiment, allRows = loadAndProcessData.loadDataset('training.1600000.processed.noemoticon.csv', 50)
-# trainingTweets = loadAndProcessData.tokenize(trainingTweets)
-trainingTweets, trainingSentiment = loadAndProcessData.removeStopWords(trainingTweets, trainingSentiment)
+trainingTweets, trainingSentiment, allRows = loadAndProcessData.loadDataset('training.1600000.processed.noemoticon.csv', 200)
+trainingTweets, trainingSentiment = loadAndProcessData.tokenize(trainingTweets, trainingSentiment)
+
 
 # load the test data
 testTweetsAll, testSentiment, testRows = loadAndProcessData.loadDataset('testdata.manual.2009.06.14.csv', 1)
-testTweetsAll, testSentiment = loadAndProcessData.removeStopWords(testTweetsAll, testSentiment)
+testTweetsAll, testSentiment = loadAndProcessData.tokenize(testTweetsAll, testSentiment)
+
 
 # we are going to test the models on a subsample of the overall test set that is only positive and negative
-# running a bunch of tests shows conclusively that for this particular dataset, the models learn most effectively when trained on only positive and negative sentiment. it makes sense that neutral is hard to figure out, since it is a general catch-all bucket, rather than a specific category to be observed.
+# running a bunch of tests shows that for this particular dataset, the models learn most effectively when trained on only positive and negative sentiment. it makes sense that neutral is hard to figure out, since it is a general catch-all bucket, rather than a specific category to be observed.
 # we will go in after and take predictions where the model does not feel strongly about the document being either positive or negative, and transform those into neutral predictions
+# for now, separate out only the positive and negative documents in our testdata
 testTweetsPosNegOnly = []
 testSentimentPosNegOnly = []
 for row in testRows:
@@ -35,6 +38,8 @@ for row in testRows:
             testSentimentPosNegOnly.append(0)
         testTweetsPosNegOnly.append(row[5])
 
+
+# instead of predicting two categories ('0', and '4') that the algorithm doesn't inherently understand are mutually exclusive, we will explicitly turn this into a single binary classification problem (0 or 1)
 cleanedTrainingSentiment = []
 for score in trainingSentiment:
     if score == '4':
@@ -43,6 +48,7 @@ for score in trainingSentiment:
         cleanedTrainingSentiment.append(0)
 trainingSentiment = cleanedTrainingSentiment
 
+
 # split out a third of our "training" dataset to train the ensembler algorithm on at the end
 trainingTweets, ensembleTweets, trainingSentiment, ensembleSentiment = train_test_split(trainingTweets, trainingSentiment, test_size=0.33, random_state=8)
 
@@ -50,9 +56,11 @@ trainingTweets, ensembleTweets, trainingSentiment, ensembleSentiment = train_tes
 # we will only be using the top several thousand most frequent words in each sentiment corpus
 numWordsToUse = 2000
 
+
 ##############################################################
-# Training Data Corpus
+# Stanford Twitter Sentiment (STS)
 ###############################################################
+# this is the original "training" data provided
 # get features from corpus
 stsFeatures, stsSentiment = stsTwitterMessages.getFeatures(numWordsToUse, trainingTweets, trainingSentiment)
 stsEnsembleTweets = stsTwitterMessages.formatTestData(ensembleTweets)
@@ -95,27 +103,10 @@ atcTestTweetsAll = atcTwitterMessages.formatTestData(testTweetsAll)
 atcPredictions, atcEnsemblePredictions = trainClassifiers.trainClassifier(atcFeatures, atcSentiment, atcTestTweetsPosNegOnly, testSentimentPosNegOnly, atcTestTweetsAll, atcEnsembleTweets, ensembleSentiment)
 
 
-def aggregatePredictions(stsPredictions, movieReviewPredictions, atcPredictions, fileName):
-    allPredictions = []
 
-    # all of our predictions lists will have the same number of items, and in the same order
-    for idx, prediction in enumerate(stsPredictions):
-        # add in a new row with the prediction from the classifier trained on the Stanford Twitter Sentiment training data
-        allPredictions.append([prediction])
-        # # to that row, add the NLTK-movie-review-trained classifier's prediction
-        allPredictions[idx].append(movieReviewPredictions[idx])
-        # # to that row, add the Aggregated Twitter Corpus's-trained classifier's prediction
-        allPredictions[idx].append(atcPredictions[idx])
-
-    # add header row
-    allPredictions.insert(0,['Stanford Twitter Sentiment', 'NLTK Movie Reviews', 'Aggregated Twitter Corpus'])
-
-    loadAndProcessData.writeTestData(allPredictions, fileName)
-    return allPredictions
-
-testPredictions = aggregatePredictions(stsPredictions, movieReviewPredictions, atcPredictions, 'testdata.all.predictions.csv')
-ensembledPredictions = aggregatePredictions(stsEnsemblePredictions, movieReviewEnsemblePredictions, atcEnsemblePredictions, 'ensembleData.all.predictions.csv')
+testPredictions = loadAndProcessData.aggregatePredictions(stsPredictions, movieReviewPredictions, atcPredictions, 'testdata.all.predictions.csv')
+ensembledPredictions = loadAndProcessData.aggregatePredictions(stsEnsemblePredictions, movieReviewEnsemblePredictions, atcEnsemblePredictions, 'ensembleData.all.predictions.csv')
 
 finalPredictions = trainClassifiers.trainEnsembleClassifier(ensembledPredictions, ensembleSentiment, testPredictions)
-loadAndProcessData.writeTestData(finalPredictions, 'testdata.entire.ensembled.predictions.csv')
+loadAndProcessData.writeData(finalPredictions, 'testdata.entire.ensembled.predictions.csv')
 

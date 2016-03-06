@@ -34,22 +34,16 @@ def loadDataset(fileName, splitNum, tweetColumn=5):
 
     return allTweets, allTweetSentiments, allRows
 
-def tokenize(tweets):
-    tokenizer = TweetTokenizer(preserve_case=False,reduce_len=True,strip_handles=True)
-    tokenized = []
-    for tweet in tweets:
-        tokenizedTweet = tokenizer.tokenize(tweet)
-        # print tokenizedTweet
-        tokenized.append(tokenizedTweet)
-    return tokenized
 
-def removeStopWords(tweets, sentiment):
+# tokenizing means splitting a document into individual words. while it might seem like splitting on spaces is enough, there are a lot of edge cases, which make a built-in tool like NLTK's tokenizers very useful
+def tokenize(tweets, sentiment):
     # stopwords are super common words that occur so frequently as to be useless for ML
     stopWords = set(stopwords.words('english'))
 
     # NLTK has a tokenizer built out specifically for short messaging data
-    # here we will use some of it's features to turn all words to lowercase,
-    # reduce the length of repeated characters ('hiiiiiiiii' and 'hiiiii' both become 'hiii' with three repeats)
+    # here we will use some of it's features to:
+     # turn all words to lowercase,
+    # reduce the length of repeated characters ('hiiiiiiiii' and 'hiiiii' both become 'hiii' with three repeats of the 'i'),
     # and get rid of any handles that might exist in the message
     tokenizer = TweetTokenizer(preserve_case=False,reduce_len=True,strip_handles=True)
 
@@ -78,6 +72,8 @@ def removeStopWords(tweets, sentiment):
 
     return tokenizedTweets, cleanedSentiment
 
+
+# some algorithms do not train well on ordered data. This function shuffles our data so we don't have one big block of positive documents followed by another large block of negative documents
 def shuffleOrder(tweets, sentiment):
     combined = []
     for rowIdx, tweet in enumerate(tweets):
@@ -89,6 +85,9 @@ def shuffleOrder(tweets, sentiment):
     random.shuffle(combined)
     return combined
 
+
+# parses through a dataset to extract the most popular words
+# can limit this selection to exclude highly popular or rarely-used words using lowerBound and upperBound as indices while slicing
 def createPopularWords(combined, lowerBound, upperBound):
     allWords = []
     for message in combined:
@@ -151,6 +150,7 @@ def extractFeaturesList(tweets, popularWords, inclusionOrCounts='counts'):
     return formattedTweets
 
 
+# this will perform the entire standardized portion of our NLP feature engineering process 
 def nlpFeatureEngineering(tweets, sentiment, lowerBound=0, upperBound=3000, inclusionOrCounts='counts'):
     combined = shuffleOrder(tweets, sentiment)
 
@@ -166,7 +166,30 @@ def nlpFeatureEngineering(tweets, sentiment, lowerBound=0, upperBound=3000, incl
     
     return formattedTweets, sentiment, popularWords
 
-def writeTestData(testData, fileName):
+
+# aggregate together predictions made from different classifiers we trained on different corpora
+# this will allow us to create an effective ensembler algorithm that picks through the results of all these stage 1 predictions
+def aggregatePredictions(stsPredictions, movieReviewPredictions, atcPredictions, fileName):
+    allPredictions = []
+
+    # all of our predictions lists will have the same number of items, and in the same order
+    for idx, prediction in enumerate(stsPredictions):
+        # add in a new row with the prediction from the classifier trained on the Stanford Twitter Sentiment training data
+        allPredictions.append([prediction])
+        # # to that row, add the NLTK-movie-review-trained classifier's prediction
+        allPredictions[idx].append(movieReviewPredictions[idx])
+        # # to that row, add the Aggregated Twitter Corpus's-trained classifier's prediction
+        allPredictions[idx].append(atcPredictions[idx])
+
+    # add header row
+    allPredictions.insert(0,['Stanford Twitter Sentiment', 'NLTK Movie Reviews', 'Aggregated Twitter Corpus'])
+
+    writeData(allPredictions, fileName)
+    return allPredictions
+
+
+# write data to a file
+def writeData(testData, fileName):
 
     with open(fileName, 'wb+') as writeFile:
         csvWriter = csv.writer(writeFile, dialect='excel')
