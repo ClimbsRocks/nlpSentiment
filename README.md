@@ -13,6 +13,9 @@ From the command line
 1. `import nltk`
 1. `nltk.download()` This will open a GUI.
 1. Follow prompts to download everything. This will download 1.8GB of material.
+1. Download the [testing and training data](http://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip).
+1. Unzip those files
+1. Move those two .csv files, with the names they already have, to the `nlpSentiment` directory
 1. Back on the command line inside the nlpSentiment directory: `python app.py`
 
 I have included a copy of the results this project produces in .csv format. Per usual, there is a trade-off between computing power and accuracy. The version of the code pushed up to GitHub is biased towards being able to run quickly to demonstrate the process. The results I have incldued in the .csv files come from a longer run of the data, and doubtless could be improved even more if allowed to run overnight. 
