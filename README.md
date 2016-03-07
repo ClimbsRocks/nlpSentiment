@@ -45,9 +45,9 @@ This lead to an overall accuracy score of 170 correctly predicted messages, or 3
 
 Breaking this down further, here is how they did for each sentiment category, in terms of how many they accurately predicted in that category, out of total tweets in that category:
 
-Negative: 14  / 164 (8.5%)
-Neutral:  139 / 139 (100%)
-Positive: 17  / 166 (10.2%)
+- Negative: 14  / 164 (8.5%)
+- Neutral:  139 / 139 (100%)
+- Positive: 17  / 166 (10.2%)
 
 
 ### Corpora Used
@@ -61,11 +61,11 @@ The classic sentiment corpus, 2000 movie reviews already gathered by NLTK.
 #### Assembling a custom Twitter sentiment corpus
 [CrowdFlower](http://www.crowdflower.com/data-for-everyone) hosts a number of Twitter corpora that have already been graded for sentiment by panels of humans. 
 
-I aggregated together 6 of their corpora into a single, aggregated and cleaned corpus, with consistent scoring labels across the entire corpus. The cleaned corpus contains over 45,000 documents, with sentiment graded on a 5 point scale as described below:
+I aggregated together 6 of their corpora into a single, aggregated and cleaned corpus, with consistent scoring labels across the entire corpus. The cleaned corpus contains over 45,000 documents, with sentiment graded on a 5 point scale outlined below:
 
-1 is negative
-3 is neutral
-5 is positive
+- 1 is negative
+- 3 is neutral
+- 5 is positive
 
 I then trained a sentiment classifier on this aggregated corpus, and used it to get predictions on the test dataset. 
 
@@ -79,11 +79,11 @@ NLTK's Twitter corpus also appears to grade sentiment based solely on emoticons.
 ### Performance of Different Corpora- Training
 The models were all able to pick up on the trends in their own training corpus rather nicely.
 
-STS Training Corpus: 76.6%
-Movie Reviews Corpus: 78.9%
-Aggregated Twitter Corpus: 86.3%
-NLTK Twitter Corpus: 99.9% (they used purely emoticon-based sentiment scoring, which is easy for an ML model to pick up on)
-NLTK Twitter w/o Emoticons Corpus: 78.4%
+- STS Training Corpus: 76.6%
+- Movie Reviews Corpus: 78.9%
+- Aggregated Twitter Corpus: 86.3%
+- NLTK Twitter Corpus: 99.9% (they used purely emoticon-based sentiment scoring, which is easy for an ML - model to pick up on)
+- NLTK Twitter w/o Emoticons Corpus: 78.4%
 
 
 These scores all come from a holdout portion of their respective training corpus that the model was not trained on. They very closely mirror the models' cross-validation scores from the hyperparameter search, as we would expect. 
@@ -92,12 +92,12 @@ These scores all come from a holdout portion of their respective training corpus
 ### Performance of Different Corpora- Predicting
 The models' ability to generalize to the test dataset aligned pretty closely to what you would instinctively expect. A recent run produced these results.
 
-STS Training Corpus: 51%
-Movie Reviews Corpus: 35%
-Aggregated Twitter Corpus: 46%
-NLTK Twitter Corpus: 33%
-NLTK Twitter w/o Emoticons Corpus: 46%
-Ensembled Predictions: 53%
+- STS Training Corpus: 51%
+- Movie Reviews Corpus: 35%
+- Aggregated Twitter Corpus: 46%
+- NLTK Twitter Corpus: 33%
+- NLTK Twitter w/o Emoticons Corpus: 46%
+- Ensembled Predictions: 53%
 
 
 ### Modeling Methodology
