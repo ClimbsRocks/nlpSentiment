@@ -51,12 +51,13 @@ for score in trainingSentiment:
 trainingSentiment = cleanedTrainingSentiment
 
 
-# split out a third of our "training" dataset to train the ensembler algorithm on at the end
-trainingTweets, ensembleTweets, trainingSentiment, ensembleSentiment = train_test_split(trainingTweets, trainingSentiment, test_size=0.33, random_state=8)
+# split out most of our "training" dataset to train the ensembler algorithm on at the end
+# training the ensembler is relatively quick compared to training the stage1 algorithms, so we will give it the bulk of the data to train on
+trainingTweets, ensembleTweets, trainingSentiment, ensembleSentiment = train_test_split(trainingTweets, trainingSentiment, test_size=0.95, random_state=8)
 
 
 # we will only be using the top several thousand most frequent words in each sentiment corpus
-numWordsToUse = 10000
+numWordsToUse = 3000
 
 
 ##############################################################

@@ -172,20 +172,21 @@ def nlpFeatureEngineering(tweets, sentiment, lowerBound=0, upperBound=3000, incl
 
 # aggregate together predictions made from different classifiers we trained on different corpora
 # this will allow us to create an effective ensembler algorithm that picks through the results of all these stage 1 predictions
-def aggregatePredictions(stsPredictions, movieReviewPredictions, atcPredictions, fileName):
+def aggregatePredictions(stsPredictions, movieReviewPredictions, atcPredictions, nltkTwitterPredictions, nltkTwitterNoEmotPredictions, fileName):
     allPredictions = []
 
     # all of our predictions lists will have the same number of items, and in the same order
     for idx, prediction in enumerate(stsPredictions):
         # add in a new row with the prediction from the classifier trained on the Stanford Twitter Sentiment training data
         allPredictions.append([prediction])
-        # # to that row, add the NLTK-movie-review-trained classifier's prediction
+        # to that row, add the predictions from the other classifiers:
         allPredictions[idx].append(movieReviewPredictions[idx])
-        # # to that row, add the Aggregated Twitter Corpus's-trained classifier's prediction
         allPredictions[idx].append(atcPredictions[idx])
+        allPredictions[idx].append(nltkTwitterPredictions[idx])
+        allPredictions[idx].append(nltkTwitterNoEmotPredictions[idx])
 
     # add header row
-    allPredictions.insert(0,['Stanford Twitter Sentiment', 'NLTK Movie Reviews', 'Aggregated Twitter Corpus'])
+    allPredictions.insert(0,['Stanford Twitter Sentiment', 'NLTK Movie Reviews', 'Aggregated Twitter Corpus', 'NLTK Twitter Corpus', 'NLTK Twitter Corpus Without Emoticons'])
 
     writeData(allPredictions, fileName)
     return allPredictions

@@ -39,17 +39,17 @@ def trainClassifier(X, y, testTweetsPosNegOnly, testSentimentPosNegOnly, testTwe
 
 
     # run on all cores, fail gracefully if a combination of hyperparameters fails to converge, try 50 different combinations of hyperparameters, train on all the training data when finished, and use a third of the dataset for cross-validation while training
-    searchCV = RandomizedSearchCV(classifier, parametersToTry, n_jobs=-1, error_score=0, n_iter=10, refit=True, cv=3)
+    searchCV = RandomizedSearchCV(classifier, parametersToTry, n_jobs=-1, error_score=0, n_iter=5, refit=True, cv=3)
     # best results out of 10k training runs:
     # {'max_features': 51, 'min_samples_split': 19, 'bootstrap': True, 'min_samples_leaf': 4}
 
+    print 'shape of this training data set:'
     print xTrain.shape
-    print len(yTrain)
     searchCV.fit(xTrain, yTrain)
+    print 'the best hyperparameters from this search are:'
     print searchCV.best_params_
     print 'best score from hyperparameter search is: ' + str(searchCV.best_score_)
     print 'score on the holdout portion of the training set: ' + str( searchCV.score(xTest, yTest) )
-    print 'score on the test data: ' + str( searchCV.score(testTweetsPosNegOnly, testSentimentPosNegOnly) )
     print 'score on the ensemble data: ' + str( searchCV.score(ensembleTweets, ensembleSentiment) )
 
 
@@ -60,9 +60,10 @@ def trainClassifier(X, y, testTweetsPosNegOnly, testSentimentPosNegOnly, testTwe
     def singlePrediction(predictions):
         cleanedPredictions = []
         for predictionRow in predictions:
-            cleanedPredictions.append(predictionRow[0])
+            cleanedPredictions.append(predictionRow[1])
         return cleanedPredictions
 
+    # the classifier gives us a predicted probability for both the 0 and the 1 case. Given that they're mutually exclusive, we can simplify down to a single number (the predicted probability of the 1 case)
     testPredictions = singlePrediction(testPredictions)
     ensemblePredictions = singlePrediction(ensemblePredictions)
 
@@ -86,9 +87,9 @@ def trainEnsembleClassifier(ensemblePredictions, ensembleSentiment, testPredicti
 
         # each prediction row contains the probability for negative and positive
         for row in predictions:
-            if row[0] < .45:
+            if row[1] <= .45:
                 cleanedPredictions.append('0')
-            elif row[0] > .45 and row[0] < .55:
+            elif row[1] > .45 and row[1] < .55:
                 cleanedPredictions.append('2')
             else:
                 cleanedPredictions.append('4')
@@ -97,7 +98,9 @@ def trainEnsembleClassifier(ensemblePredictions, ensembleSentiment, testPredicti
     testPredictionsWithNeutral = addNeutral(finalTestPredictions)
 
     for rowIdx, prediction in enumerate(finalTestPredictions):
-        testPredictions[rowIdx].append(prediction[0])
+        # print 'prediction[1]: ' + str(prediction[1])
+        # print 'testPredictionsWithNeutral[rowIdx]: ' + str(testPredictionsWithNeutral[rowIdx]) + '\n'
+        testPredictions[rowIdx].append(prediction[1])
         testPredictions[rowIdx].append( testPredictionsWithNeutral[rowIdx] )
 
     headerRow.append('Ensembled Probability')
@@ -106,9 +109,3 @@ def trainEnsembleClassifier(ensemblePredictions, ensembleSentiment, testPredicti
     testPredictions.insert(0, headerRow)
 
     return testPredictions
-
-    # train an ensemble classifier 
-    # what is our goal here? i imagine it would be twofold:
-        # 1. to get back one last, predicted likelihood of the document being positive or negative
-        # 2. to finally turn those predictions into a single number (including neutral) we can use to score our final output
-        # 3. to write all these predictions to a file. this part will likely happen back in app.py
