@@ -21,12 +21,12 @@ def loadDataset(fileName):
     return entireDataset
 
 
-# testingTweets, testingSentiment = loadAndProcessData.loadDataset('testdata.manual.2009.06.14.csv', 1)
+# testingTweets, testingSentiment = utils.loadDataset('testdata.manual.2009.06.14.csv', 1)
 entireDataset = loadDataset('testdata.manual.updated.csv')
 
 emoticons = {
-    '4': [':)','(:',': )','( :','=)','(=','= )','( =',':D',': D',':p',': p'],
-    '0': [':(','):',': (',') :','=(',')=','= (',') =',':D',': D',':p',': p']
+    '4': [':)','(:',': )','( :','=)','(=','= )','( =',':D',': D',':p',': p',':-)','(-:',':- )','( -:'],
+    '0': [':(','):',': (',') :','=(',')=','= (',') =',':D',': D',':p',': p',':-(',')-:',':- (',') -:']
 }
 
 print entireDataset
@@ -57,4 +57,4 @@ for row in entireDataset:
 
 print entireDataset
 
-loadAndProcessData.writeData(entireDataset)
+utils.writeData(entireDataset)
