@@ -1,4 +1,5 @@
 import csv
+import utils
 
 def loadDataset(fileName):
     with open(fileName, 'rU') as trainingInput:
@@ -21,15 +22,15 @@ def loadDataset(fileName):
     return entireDataset
 
 
-# testingTweets, testingSentiment = utils.loadDataset('testdata.manual.2009.06.14.csv', 1)
-entireDataset = loadDataset('testdata.manual.updated.csv')
+entireDataset = loadDataset('testdata.manual.2009.06.14.csv')
 
+
+# these are the same emoticons that cover 98.6% of the nltk twitter corpus
 emoticons = {
     '4': [':)','(:',': )','( :','=)','(=','= )','( =',':D',': D',':p',': p',':-)','(-:',':- )','( -:'],
     '0': [':(','):',': (',') :','=(',')=','= (',') =',':D',': D',':p',': p',':-(',')-:',':- (',') -:']
 }
 
-print entireDataset
 theirAlgosPredictions = []
 
 for row in entireDataset:
@@ -52,9 +53,10 @@ for row in entireDataset:
             else:
                 sentimentScore = 0
 
-    # add their algorithms prediction to each row
+    # add their algorithm's prediction as the first item in each row
     row.insert(0, sentimentScore)
 
-print entireDataset
+headerRow = ['Their algorithm\'s predictions','Manually Scored Sentiment','ID','Date','Search term used to gather tweet','User','Text']
+entireDataset.insert(0, headerRow)
 
-utils.writeData(entireDataset)
+utils.writeData(entireDataset, 'testdata.with.their.algos.predictions.csv')
