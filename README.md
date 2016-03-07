@@ -13,7 +13,7 @@ From the command line
 1. `import nltk`
 1. `nltk.download()` This will open a GUI.
 1. Follow prompts to download everything. This will download 1.8GB of material.
-1. Download the [testing and training data](http://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip).
+1. Download the [testing and training data](http://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip). The easiest way, in my opinion, is `curl -O http://cs.stanford.edu/people/alecmgo/trainingandtestdata.zip` from within the `nlpSentiment` directory. 
 1. Unzip those files
 1. Move those two .csv files, with the names they already have, to the `nlpSentiment` directory
 1. Back on the command line inside the nlpSentiment directory: `python app.py`
