@@ -1,4 +1,4 @@
-# I'm working off a dev version of scikit-learn which is prepping for features in the current production release to be deprecated
+# I'm working off a dev version of scikit-learn which is preparing for features in the current production release to be deprecated
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
@@ -22,23 +22,8 @@ trainingTweets, trainingSentiment = utils.tokenize(trainingTweets, trainingSenti
 
 
 # load the test data
-testTweetsAll, testSentiment, testRows = utils.loadDataset('testdata.manual.2009.06.14.csv', 1)
-testTweetsAll, testSentiment = utils.tokenize(testTweetsAll, testSentiment)
-
-
-# we are going to test the models on a subsample of the overall test set that is only positive and negative
-# running a bunch of tests shows that for this particular dataset, the models learn most effectively when trained on only positive and negative sentiment. it makes sense that neutral is hard to figure out, since it is a general catch-all bucket, rather than a specific category to be observed.
-# we will go in after and take predictions where the model does not feel strongly about the document being either positive or negative, and transform those into neutral predictions
-# for now, separate out only the positive and negative documents in our testdata
-testTweetsPosNegOnly = []
-testSentimentPosNegOnly = []
-for row in testRows:
-    if row[0] in ('0','4'):
-        if row[0] == '4':
-            testSentimentPosNegOnly.append(1)
-        else:
-            testSentimentPosNegOnly.append(0)
-        testTweetsPosNegOnly.append(row[5])
+testTweets, testSentiment, testRows = utils.loadDataset('testdata.manual.2009.06.14.csv', 1)
+testTweets, testSentiment = utils.tokenize(testTweets, testSentiment)
 
 
 # instead of predicting two categories ('0', and '4') that the algorithm doesn't inherently understand are mutually exclusive, we will explicitly turn this into a single binary classification problem (0 or 1)
@@ -62,78 +47,63 @@ numWordsToUse = 3000
 
 ##############################################################
 # Stanford Twitter Sentiment (STS)
-###############################################################
+##############################################################
 # this is the original "training" data provided
 # get features from corpus
 stsFeatures, stsSentiment = stsTwitterCorpus.getFeatures(numWordsToUse, trainingTweets, trainingSentiment)
+
+# format ensemble and test tweets to be compatible with the classifier that will be trained from this corpus
+stsTestTweets = stsTwitterCorpus.formatTestData(testTweets)
 stsEnsembleTweets = stsTwitterCorpus.formatTestData(ensembleTweets)
 
-# format test tweets to be compatible with the classifier that will be trained from this corpus
-stsTestTweetsPosNegOnly = stsTwitterCorpus.formatTestData(testTweetsPosNegOnly)
-stsTestTweetsAll = stsTwitterCorpus.formatTestData(testTweetsAll)
-
 # train a classifier from this corpus and use it to get predictions on our test data
-stsPredictions, stsEnsemblePredictions = trainClassifiers.trainClassifier(stsFeatures, stsSentiment, stsTestTweetsPosNegOnly, testSentimentPosNegOnly, stsTestTweetsAll, stsEnsembleTweets, ensembleSentiment)
+stsPredictions, stsEnsemblePredictions = trainClassifiers.trainClassifier(stsFeatures, stsSentiment, stsTestTweets, stsEnsembleTweets, ensembleSentiment)
 
 
-###############################################################
+# each following corpus follows nearly the exact same process
+##############################################################
 # Movie Review Corpus
-###############################################################
-# get features from corpus
+##############################################################
 movieReviewFeatures, movieReviewsSentiment = nltkMovieReviews.getFeatures(numWordsToUse)
+
+movieReviewTestTweets = nltkMovieReviews.formatTestData(testTweets)
 movieReviewEnsembleTweets = nltkMovieReviews.formatTestData(ensembleTweets)
 
-# format test tweets to be compatible with the classifier that will be trained from this corpus
-movieReviewTestTweetsPosNegOnly = nltkMovieReviews.formatTestData(testTweetsPosNegOnly)
-movieReviewTestTweetsAll = nltkMovieReviews.formatTestData(testTweetsAll)
-
-# train a classifier from this corpus and use it to get predictions on our test data
-movieReviewPredictions, movieReviewEnsemblePredictions = trainClassifiers.trainClassifier(movieReviewFeatures, movieReviewsSentiment, movieReviewTestTweetsPosNegOnly, testSentimentPosNegOnly, movieReviewTestTweetsAll, movieReviewEnsembleTweets, ensembleSentiment)
+movieReviewPredictions, movieReviewEnsemblePredictions = trainClassifiers.trainClassifier(movieReviewFeatures, movieReviewsSentiment, movieReviewTestTweets, movieReviewEnsembleTweets, ensembleSentiment)
 
 
 ##############################################################
 # Aggregated Twitter Corpus (ATC)
-###############################################################
-# get features from corpus
+##############################################################
 atcFeatures, atcSentiment = atcTwitterCorpus.getFeatures(numWordsToUse)
+
+atcTestTweets = atcTwitterCorpus.formatTestData(testTweets)
 atcEnsembleTweets = atcTwitterCorpus.formatTestData(ensembleTweets)
 
-# format test tweets to be compatible with the classifier that will be trained from this corpus
-atcTestTweetsPosNegOnly = atcTwitterCorpus.formatTestData(testTweetsPosNegOnly)
-atcTestTweetsAll = atcTwitterCorpus.formatTestData(testTweetsAll)
-
-# train a classifier from this corpus and use it to get predictions on our test data
-atcPredictions, atcEnsemblePredictions = trainClassifiers.trainClassifier(atcFeatures, atcSentiment, atcTestTweetsPosNegOnly, testSentimentPosNegOnly, atcTestTweetsAll, atcEnsembleTweets, ensembleSentiment)
+atcPredictions, atcEnsemblePredictions = trainClassifiers.trainClassifier(atcFeatures, atcSentiment, atcTestTweets, atcEnsembleTweets, ensembleSentiment)
 
 
 ##############################################################
 # NLTK Twitter Corpus (NTC)
-###############################################################
-# get features from corpus
+##############################################################
 ntcFeatures, ntcSentiment = nltkTwitterCorpus.getFeatures(numWordsToUse)
+
+ntcTestTweets = nltkTwitterCorpus.formatTestData(testTweets)
 ntcEnsembleTweets = nltkTwitterCorpus.formatTestData(ensembleTweets)
 
-# format test tweets to be compatible with the classifier that will be trained from this corpus
-ntcTestTweetsPosNegOnly = nltkTwitterCorpus.formatTestData(testTweetsPosNegOnly)
-ntcTestTweetsAll = nltkTwitterCorpus.formatTestData(testTweetsAll)
-
-# train a classifier from this corpus and use it to get predictions on our test data
-ntcPredictions, ntcEnsemblePredictions = trainClassifiers.trainClassifier(ntcFeatures, ntcSentiment, ntcTestTweetsPosNegOnly, testSentimentPosNegOnly, ntcTestTweetsAll, ntcEnsembleTweets, ensembleSentiment)
+ntcPredictions, ntcEnsemblePredictions = trainClassifiers.trainClassifier(ntcFeatures, ntcSentiment, ntcTestTweets, ntcEnsembleTweets, ensembleSentiment)
 
 
 ##############################################################
 # NLTK Twitter Corpus without emoticons (ntcNoEmot)
-###############################################################
-# get features from corpus
+##############################################################
 ntcNoEmotFeatures, ntcNoEmotSentiment = nltkTwitterNoEmoticonsCorpus.getFeatures(numWordsToUse)
+
+ntcNoEmotTestTweets = nltkTwitterNoEmoticonsCorpus.formatTestData(testTweets)
 ntcNoEmotEnsembleTweets = nltkTwitterNoEmoticonsCorpus.formatTestData(ensembleTweets)
 
-# format test tweets to be compatible with the classifier that will be trained from this corpus
-ntcNoEmotTestTweetsPosNegOnly = nltkTwitterNoEmoticonsCorpus.formatTestData(testTweetsPosNegOnly)
-ntcNoEmotTestTweetsAll = nltkTwitterNoEmoticonsCorpus.formatTestData(testTweetsAll)
+ntcNoEmotPredictions, ntcNoEmotEnsemblePredictions = trainClassifiers.trainClassifier(ntcNoEmotFeatures, ntcNoEmotSentiment, ntcNoEmotTestTweets, ntcNoEmotEnsembleTweets, ensembleSentiment)
 
-# train a classifier from this corpus and use it to get predictions on our test data
-ntcNoEmotPredictions, ntcNoEmotEnsemblePredictions = trainClassifiers.trainClassifier(ntcNoEmotFeatures, ntcNoEmotSentiment, ntcNoEmotTestTweetsPosNegOnly, testSentimentPosNegOnly, ntcNoEmotTestTweetsAll, ntcNoEmotEnsembleTweets, ensembleSentiment)
 
 
 # aggregate all our predictions together into a single matrix that we will train our ensemble classifier on

@@ -24,10 +24,8 @@ def loadDataset(fileName, splitNum, tweetColumn=5):
         allRows = []
         for row in trainingRows:
             rowCount += 1
-            # TODO: once we're ready for production, use all the data
             if rowCount % splitNum == 0:
                 # csv only gives us an iterable, not the data itself
-                # the message of the tweet is at index position 5
                 allTweets.append(row[tweetColumn])
                 allTweetSentiments.append( row[0] )
                 allRows.append(row)
@@ -37,8 +35,6 @@ def loadDataset(fileName, splitNum, tweetColumn=5):
 
 # tokenizing means splitting a document into individual words. while it might seem like splitting on spaces is enough, there are a lot of edge cases, which make a built-in tool like NLTK's tokenizers very useful
 def tokenize(tweets, sentiment):
-    # stopwords are super common words that occur so frequently as to be useless for ML
-    stopWords = set(stopwords.words('english'))
 
     # NLTK has a tokenizer built out specifically for short messaging data
     # here we will use some of it's features to:
@@ -54,13 +50,6 @@ def tokenize(tweets, sentiment):
     for rowIdx, tweet in enumerate(tweets):
         try:
             tokenizedWords = tokenizer.tokenize(tweet)
-            # filteredWords = []
-
-            # for word in tokenizedWords:
-            #     if word not in stopWords:
-            #         filteredWords.append(word)
-
-            # tokenizedTweets.append(filteredWords)
             tokenizedTweets.append(tokenizedWords)
             cleanedSentiment.append(sentiment[rowIdx])
 
@@ -92,25 +81,20 @@ def shuffleOrder(tweets, sentiment):
 def createPopularWords(combined, lowerBound, upperBound):
     allWords = []
     for message in combined:
-        # print message
         for word in message[0]:
-            # print word
             allWords.append(word)
 
     allWords = nltk.FreqDist(allWords)
 
-    # print allWords.most_common(upperBound)
 
-    # grab the top several thousand words, ignoring the 100 most popular
+    # grab the top several thousand words, ignoring the lowerBound most popular
     # grabbing more words leads to more accurate predictions, at the cost of both memory and compute time
-    # ignoring the 100 most popular is an easy method for handling stop words that are specific to this dataset, rather than just the English language overall
+    # ignoring the x most popular words is an easy method for handling stop words that are specific to this dataset, rather than just the English language overall
     popularWords = []
     wordsToUse = allWords.most_common(upperBound)[lowerBound:upperBound]
     for pair in wordsToUse:
         popularWords.append(pair[0])
-        # print word
-        # print allWords[word]
-    # print popularWords
+
     return popularWords
 
 
@@ -199,6 +183,4 @@ def writeData(testData, fileName):
         csvWriter = csv.writer(writeFile, dialect='excel')
         for row in testData:
             csvWriter.writerow(row)
-
-
 

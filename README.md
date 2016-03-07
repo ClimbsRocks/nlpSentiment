@@ -11,7 +11,7 @@ From the command line
 1. If this fails to install scikit-learn properly, you may have to `pip install numpy` and `pip install scipy`
 1. Open python on the command line
 1. `import nltk`
-1. `ntlk.download()` This will open a GUI.
+1. `nltk.download()` This will open a GUI.
 1. Follow prompts to download everything. This will download 1.8GB of material.
 1. Back on the command line inside the nlpSentiment directory: `python app.py`
 
@@ -87,7 +87,7 @@ These scores all come from a holdout portion of their respective training corpus
 
 
 ### Performance of Different Corpora- Predicting
-The models' ability to generalize to the test dataset aligned pretty closely to what you would instinctively expect. 
+The models' ability to generalize to the test dataset aligned pretty closely to what you would instinctively expect. A recent run produced these results.
 
 STS Training Corpus: 51%
 Movie Reviews Corpus: 35%
