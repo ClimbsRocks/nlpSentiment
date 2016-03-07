@@ -29,7 +29,7 @@ def getFeatures(numWordsToUse):
             elif category == 'neg':
                 sentiment.append(0)
             else:
-                print 'not sure what this category is: ' + category
+                print 'We are not sure what this category is: ' + category
 
     global popularWords
     formattedReviews, sentiment, popularWords = utils.nlpFeatureEngineering(
@@ -37,6 +37,7 @@ def getFeatures(numWordsToUse):
         )
 
 
+    # transform list of dictionaries into a sparse matrix
     sparseFeatures = dv.fit_transform(formattedReviews)
 
     return sparseFeatures, sentiment

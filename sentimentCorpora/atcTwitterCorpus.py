@@ -40,10 +40,7 @@ def getFeatures(numWordsToUse):
             tokenizedTweets, cleanedSentiment,0,numWordsToUse,'counts'
         )
 
-    # right now we have a data structure roughly equivalent to a dense matrix, except each row is a dictionary
-    # DictVectorizer performs two key functions for us:
-        # 1. transforms each row from a dictionary into a vector using consistent placing of keys into indexed positions within each vector
-        # 2. returns sparse vectors, saving enormous amounts of memory which becomes very useful when training our models
+    # transform list of dictionaries into a sparse matrix
     sparseFeatures = dv.fit_transform(formattedTweets)
 
     return sparseFeatures, sentiment
