@@ -1,9 +1,10 @@
 # nlpPredictions
-> Predicting the sentiment of tweets using NLP.
+> Predicting the sentiment of tweets using NLP. 
 
 ## Installation
 
-From the command line:
+From the command line
+
 1. `git clone https://github.com/ClimbsRocks/nlpSentiment.git`
 1. `cd nlpSentiment`
 1. `pip install -r requirements.txt`
@@ -73,7 +74,7 @@ NLTK's Twitter corpus also appears to grade sentiment based solely on emoticons.
 
 
 ### Performance of Different Corpora- Training
-The models were all able to pick up on the trends in their own training corpus rather nicely:
+The models were all able to pick up on the trends in their own training corpus rather nicely.
 
 STS Training Corpus: 76.6%
 Movie Reviews Corpus: 78.9%
@@ -86,7 +87,7 @@ These scores all come from a holdout portion of their respective training corpus
 
 
 ### Performance of Different Corpora- Predicting
-Not all models were able to generalize to the test data. In particular, the movie reviews dataset did not end up being useful on such a different style of communication. 
+The models' ability to generalize to the test dataset aligned pretty closely to what you would instinctively expect. 
 
 STS Training Corpus: 51%
 Movie Reviews Corpus: 35%
